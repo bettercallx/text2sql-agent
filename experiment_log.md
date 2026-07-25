@@ -1,9 +1,12 @@
 # Experiment Log
 
-## Baseline (10 queries)
+Todo: design of pipeline? schema linking(table augmentation?), error recovery, memory?
+
+## Baseline (10 queries -> 500 queries)
 
 **2026/7/23:**
-**Setup:** naive prompt (schema + question + evidence) → Claude Sonnet → execute & compare
+
+**Setup:** naive prompt (schema + question + evidence) -> claude-sonnet-4-6 -> execute & compare
 
 **Result:** 5/10 correct (50%). Simple all correct, moderate/challenging all failed.
 
@@ -14,8 +17,27 @@
 
 **Fixed:** 加 clean_sql 处理 .md
 
-
 **Next:** 修改 clean_sql, loop through sqlite.json看正确率
+
+**2026/7/24:**
+
+**Data:**  参考prompt.py refine prompt, 约束responce格式, 重构代码, add retry times in case it crashes halfway through. Save 500 queries results as JSON
+
+Smart model: Claude Sonnet 5: claude-sonnet-5, using claude-sonnet-4-6 so far
+
+For fast, cost-effective tasks: Claude Haiku 4.5: claude-haiku-4-5-20251001
+
+**Next:** schema only 500 queries baseline; schema+sample rows 500 queries. multi threads?
+
+**2026/7/25:**
+
+**Experiments design:**
+
+| | Sonnet-4-6 (500) | Haiku (50)|
+|1.baseline(schema+question)| | |
+|2.baseline+ 3 rows real data| | |
+|3.schema linking?| | |
+|4.error recovering?| | |
 
 
 

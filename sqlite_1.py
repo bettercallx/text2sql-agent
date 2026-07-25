@@ -1,5 +1,5 @@
 # parse sqlite json(question&evidence) -> combine schema&Q&evidence as prompt -> API -> compare result with "SQL" -> statistical matrix
-# client已经配好了API key和 API endpoint,不需要指定URL client.messages.create()发送了一个HTTP POST请求, 把model messages max_tokens打包成json发过去
+# client已经配好了API key和 API endpoint,不需要指定URL client.messages.create()发送了一个HTTP POST请求, 把 model&messages&max_tokens 打包成json发过去
 
 import os
 import sqlite3
@@ -15,8 +15,23 @@ def get_schema(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
+    # sqlite_master是SQLite内置的一张系统元数据表schema table
+    # 过滤条件WHERE type='table'只提取table类型的记录，过滤掉index view trigger等数据库对象
+    # SELECT sql只读取sql这一列
     cursor.execute("SELECT sql FROM sqlite_master WHERE type='table'")
     schemas = cursor.fetchall()
+    # fetchall()：让cursor获取上面查询到的所有结果，返回一个List[]
+
+    #每个CREATE TABLE是一张表，customers有三列，
+    # CustomerID 整数&主键，Segment 文本，Currency 文本
+    # not null 不允许为空(可存空文本""和0占位)，null允许为空值，UNIQUE表示值唯一不能出现重复值
+    # CREATE TABLE customers
+    #(
+    #    CustomerID INTEGER UNIQUE     not null
+    #        primary key,
+    #    Segment    TEXT null,
+    #    Currency   TEXT null
+    #)
 
     conn.close()
     return "\n".join(s[0] for s in schemas if s[0])
@@ -38,9 +53,9 @@ def is_correct(db_path, predicted_sql, gold_sql):
         conn.close()
 
 # responce is .md(```sql````), sometimes return long thought process. both need to be cleaned 
-#---RAW OUTPUT---
-#"```sql\nSELECT SUM(ym.Consumption) / 12 AS AvgMonthlyConsumption\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE c.Segment = 'SME'\nAND ym.Date BETWEEN '201301' AND '201312'\n```"
-#---END---
+# ---RAW OUTPUT---
+# "```sql\nSELECT SUM(ym.Consumption) / 12 AS AvgMonthlyConsumption\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE c.Segment = 'SME'\nAND ym.Date BETWEEN '201301' AND '201312'\n```"
+# ---END---
 def clean_sql(response_text):
     text = response_text.strip()
     if "```sql" in text:
@@ -71,7 +86,7 @@ for item in data_list[:10]:
             }
         ],
 
-        model="claude-sonnet-4-6",
+        model="claude-sonnet-5",
     )
 
     raw = message.content[0].text

@@ -4,6 +4,8 @@ client = Anthropic()
 
 import sqlite3
 db_path = "mini_dev/llm/mini_dev_data/data_minidev/MINIDEV/dev_databases/debit_card_specializing/debit_card_specializing.sqlite"
+
+
 def get_schema(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -16,6 +18,17 @@ def get_schema(db_path):
 
 schema = get_schema(db_path)
 print(schema)
+#每个CREATE TABLE是一张表，customers有三列，
+# CustomerID 整数&主键，Segment 文本，Currency 文本
+# not null 不允许为空(可存空文本""和0占位)，null允许为空值，UNIQUE表示值唯一不能出现重复值
+# CREATE TABLE customers
+#(
+#    CustomerID INTEGER UNIQUE     not null
+#        primary key,
+#    Segment    TEXT null,
+#    Currency   TEXT null
+#)
+
 prompt = f"""Given this database schema:
 {schema}
 
