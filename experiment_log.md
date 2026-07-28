@@ -13,7 +13,6 @@ Todo: design of pipeline? schema linking(table augmentation?), error recovery, m
 **Failure analysis:**
 
 - Q1481 (challenging): Claude return long thought process + SQL, 说明还要clean再写入prompt
-- Q1479 (moderate):
 
 **Fixed:** 加 clean_sql 处理 .md
 
@@ -27,17 +26,21 @@ Smart model: Claude Sonnet 5: claude-sonnet-5, using claude-sonnet-4-6 so far
 
 For fast, cost-effective tasks: Claude Haiku 4.5: claude-haiku-4-5-20251001
 
-**Next:** schema only 500 queries baseline; schema+sample rows 500 queries. multi threads?
+**Next:** schema only 500 queries baseline; schema+sample rows 500 queries. multi threads(get_request.py)? chain of thoughts?
 
 **2026/7/25:**
 
 **Experiments design:**
 
-| | Sonnet-4-6 (500) | Haiku (50)|
-|1.baseline(schema+question)| | |
-|2.baseline+ 3 rows real data| | |
-|3.schema linking?| | |
-|4.error recovering?| | |
+| | Sonnet-4-6 (500queries) | Haiku (50queries) | Haiku (10queries) |
+| :--- | :---: | :---: | :---: |
+| 1.baseline(schema+question) | | | |
+| 2.baseline+ 3 rows real data | | | |
+| 3.schema linking? | | | |
+| 4.error recovering? | | | |
 
+**fixed:** add run.sh, get_request.py(combine path, retry times, save results)
 
+**2026/7/28:**
 
+**problem:** waiting prompt/api response and stucked for a long time, generating prompt & accessing API need to be split

@@ -86,6 +86,22 @@ db_table_map = {
     ],
 }
 
+def generate_schema_prompt_sqlite_nodata(db_path):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table'")
+    schemas = cursor.fetchall()
+    conn.close()
+    # return schema:
+    # CREATE TABLE customers
+    # (
+    #    CustomerID INTEGER UNIQUE     not null
+    #        primary key,
+    #    Segment    TEXT null,
+    #    Currency   TEXT null
+    # )
+    return "\n".join(s[0] for s in schemas if s[0])
+
 
 def nice_look_table(column_names: list, values: list):
     rows = []
@@ -108,7 +124,7 @@ def nice_look_table(column_names: list, values: list):
     final_output = header + "\n" + rows
     return final_output
 
-
+# 为了数据 和 table名 和 table schema一一对应, 先获取tables名, 遍历tables名获得对应CREATE, 用tables名获得data, 拼接存进dict
 def generate_schema_prompt_sqlite(db_path, num_rows=None):
     # extract create ddls
     """
@@ -153,114 +169,3 @@ def generate_schema_prompt_sqlite(db_path, num_rows=None):
     schema_prompt = "\n\n".join(full_schema_prompt_list)
 
     return schema_prompt
-
-
-def connect_mysql():
-    # Open database connection
-    # Connect to the database"
-    db = pymysql.connect(
-        host="localhost",
-        user="root",
-        password="YOUR_PASSWORD",
-        database="BIRD",
-        unix_socket="/tmp/mysql.sock",
-        # port=3306,
-    )
-    return db
-
-
-def format_mysql_create_table(table_name, columns_info):
-    lines = []
-    lines.append(f"CREATE TABLE {table_name}\n(")
-
-    primary_key_defined = False
-
-    for col in columns_info:
-        column_name, data_type, nullable, key, _, _ = col
-
-        sql_type = str.upper(data_type)
-
-        null_type = "not null" if nullable == "NO" else "null"
-        primary_key_part = (
-            "primary key" if "PRI" in key and not primary_key_defined else ""
-        )
-        primary_key_defined = True if "PRI" in key else primary_key_defined
-        column_line = (
-            f"    `{column_name}` {sql_type} {null_type} {primary_key_part},".strip()
-        )
-        lines.append(column_line)
-    lines[-1] = lines[-1].rstrip(",")
-    lines.append(");")
-    return "\n".join(lines)
-
-
-def format_postgresql_create_table(table_name, columns_info):
-    lines = [f"CREATE TABLE {table_name}\n("]
-    for i, (column_name, data_type, is_nullable) in enumerate(columns_info):
-        null_status = "NULL" if is_nullable == "YES" else "NOT NULL"
-        postgres_data_type = data_type.upper()
-        column_line = f"    `{column_name}` {postgres_data_type} {null_status}"
-        if i < len(columns_info) - 1:
-            column_line += ","
-        lines.append(column_line)
-
-    lines.append(");")
-    return "\n".join(lines)
-
-
-def generate_schema_prompt_mysql(db_path):
-    db = connect_mysql()
-    cursor = db.cursor()
-    db_name = db_path.split("/")[-1].split(".sqlite")[0]
-    tables = [table for table in db_table_map[db_name]]
-    schemas = {}
-    for table in tables:
-        cursor.execute(f"DESCRIBE BIRD.{table}")
-        raw_schema = cursor.fetchall()
-        pretty_schema = format_mysql_create_table(table, raw_schema)
-        schemas[table] = pretty_schema
-    schema_prompt = "\n\n".join(schemas.values())
-    db.close()
-    return schema_prompt
-
-
-def connect_postgresql():
-    # Open database connection
-    # Connect to the database
-    db = psycopg2.connect(
-        "dbname=BIRD user=root host=localhost password=YOUR_PASSWORD port=5432"
-    )
-    return db
-
-
-def generate_schema_prompt_postgresql(db_path):
-    db = connect_postgresql()
-    cursor = db.cursor()
-    db_name = db_path.split("/")[-1].split(".sqlite")[0]
-    tables = [table for table in db_table_map[db_name]]
-    schemas = {}
-    for table in tables:
-        cursor.execute(
-            f"""
-                SELECT column_name, data_type, is_nullable
-                FROM information_schema.columns
-                WHERE table_name = '{table}';
-            """
-        )
-        raw_schema = cursor.fetchall()
-        pretty_schema = format_postgresql_create_table(table, raw_schema)
-        schemas[table] = pretty_schema
-    schema_prompt = "\n\n".join(schemas.values())
-    db.close()
-    return schema_prompt
-
-
-def generate_schema_prompt(sql_dialect, db_path=None, num_rows=None):
-    if sql_dialect == "SQLite":
-        return generate_schema_prompt_sqlite(db_path, num_rows)
-    elif sql_dialect == "MySQL":
-        return generate_schema_prompt_mysql(db_path)
-    elif sql_dialect == "PostgreSQL":
-        return generate_schema_prompt_postgresql(db_path)
-    else:
-        raise ValueError("Unsupported SQL dialect: {}".format(sql_dialect))

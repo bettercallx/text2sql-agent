@@ -1,0 +1,47 @@
+[
+  {
+    "question_id": 1471,
+    "db_id": "debit_card_specializing",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT CAST(COUNT(CASE WHEN Currency = 'EUR' THEN 1 END) AS FLOAT) / COUNT(CASE WHEN Currency = 'CZK' THEN 1 END) AS ratio\nFROM customers\nWHERE Currency IN ('EUR', 'CZK')",
+    "gold_sql": "SELECT CAST(SUM(IIF(Currency = 'EUR', 1, 0)) AS FLOAT) / SUM(IIF(Currency = 'CZK', 1, 0)) AS ratio FROM customers",
+    "correct": true,
+    "raw_output": "SELECT CAST(COUNT(CASE WHEN Currency = 'EUR' THEN 1 END) AS FLOAT) / COUNT(CASE WHEN Currency = 'CZK' THEN 1 END) AS ratio\nFROM customers\nWHERE Currency IN ('EUR', 'CZK')"
+  },
+  {
+    "question_id": 1472,
+    "db_id": "debit_card_specializing",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT c.CustomerID\nFROM yearmonth y\nJOIN customers c ON y.CustomerID = c.CustomerID\nJOIN gasstations g ON c.CustomerID IN (\n    SELECT DISTINCT t.CustomerID \n    FROM transactions_1k t \n    WHERE t.GasStationID IN (\n        SELECT GasStationID FROM gasstations WHERE Country = 'LAM'\n    )\n)\nWHERE SUBSTR(y.Date, 1, 4) = '2012'\nAND g.Country = 'LAM'\nGROUP BY c.CustomerID\nORDER BY SUM(y.Consumption) ASC\nLIMIT 1",
+    "gold_sql": "SELECT T1.CustomerID FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Segment = 'LAM' AND SUBSTR(T2.Date, 1, 4) = '2012' GROUP BY T1.CustomerID ORDER BY SUM(T2.Consumption) ASC LIMIT 1",
+    "correct": false,
+    "raw_output": "SELECT c.CustomerID\nFROM yearmonth y\nJOIN customers c ON y.CustomerID = c.CustomerID\nJOIN gasstations g ON c.CustomerID IN (\n    SELECT DISTINCT t.CustomerID \n    FROM transactions_1k t \n    WHERE t.GasStationID IN (\n        SELECT GasStationID FROM gasstations WHERE Country = 'LAM'\n    )\n)\nWHERE SUBSTR(y.Date, 1, 4) = '2012'\nAND g.Country = 'LAM'\nGROUP BY c.CustomerID\nORDER BY SUM(y.Consumption) ASC\nLIMIT 1;"
+  },
+  {
+    "question_id": 1473,
+    "db_id": "debit_card_specializing",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT AVG(ym.Consumption) / 12 AS average_monthly_consumption\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE c.Segment = 'SME'\nAND ym.Date BETWEEN '201301' AND '201312'",
+    "gold_sql": "SELECT AVG(T2.Consumption) / 12 FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE SUBSTR(T2.Date, 1, 4) = '2013' AND T1.Segment = 'SME'",
+    "correct": true,
+    "raw_output": "SELECT AVG(ym.Consumption) / 12 AS average_monthly_consumption\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE c.Segment = 'SME'\nAND ym.Date BETWEEN '201301' AND '201312'"
+  },
+  {
+    "question_id": 1476,
+    "db_id": "debit_card_specializing",
+    "difficulty": "challenging",
+    "predicted_sql": "SELECT \n    SUM(CASE WHEN c.Currency = 'CZK' THEN ym.Consumption ELSE 0 END) -\n    SUM(CASE WHEN c.Currency = 'EUR' THEN ym.Consumption ELSE 0 END) AS ConsumptionDifference\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE ym.Date BETWEEN '2012' AND '2012'\n    OR (ym.Date >= '201201' AND ym.Date <= '201212')",
+    "gold_sql": "SELECT SUM(IIF(T1.Currency = 'CZK', T2.Consumption, 0)) - SUM(IIF(T1.Currency = 'EUR', T2.Consumption, 0)) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE SUBSTR(T2.Date, 1, 4) = '2012'",
+    "correct": true,
+    "raw_output": "SELECT \n    SUM(CASE WHEN c.Currency = 'CZK' THEN ym.Consumption ELSE 0 END) -\n    SUM(CASE WHEN c.Currency = 'EUR' THEN ym.Consumption ELSE 0 END) AS ConsumptionDifference\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE ym.Date BETWEEN '2012' AND '2012'\n    OR (ym.Date >= '201201' AND ym.Date <= '201212')"
+  },
+  {
+    "question_id": 1479,
+    "db_id": "debit_card_specializing",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT SUBSTR(ym.Date, 1, 4) AS Year, SUM(ym.Consumption) AS TotalConsumption\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE c.Currency = 'CZK'\nGROUP BY SUBSTR(ym.Date, 1, 4)\nORDER BY TotalConsumption DESC\nLIMIT 1",
+    "gold_sql": "SELECT SUBSTR(T2.Date, 1, 4) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Currency = 'CZK' GROUP BY SUBSTR(T2.Date, 1, 4) ORDER BY SUM(T2.Consumption) DESC LIMIT 1",
+    "correct": false,
+    "raw_output": "SELECT SUBSTR(ym.Date, 1, 4) AS Year, SUM(ym.Consumption) AS TotalConsumption\nFROM yearmonth ym\nJOIN customers c ON ym.CustomerID = c.CustomerID\nWHERE c.Currency = 'CZK'\nGROUP BY SUBSTR(ym.Date, 1, 4)\nORDER BY TotalConsumption DESC\nLIMIT 1;"
+  }
+]
