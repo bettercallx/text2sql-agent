@@ -1,4 +1,5 @@
 from table_schema import generate_schema_prompt_sqlite_nodata
+from table_schema import generate_schema_prompt_sqlite
 
 # comment = question + evidence
 def generate_comment_prompt(question, sql_dialect, knowledge=None):
@@ -28,8 +29,13 @@ def generate_instruction_prompt(sql_dialect):
         """
 
 
-def generate_combined_prompts_one(db_path, question, sql_dialect, knowledge=None):
-    schema_prompt = generate_schema_prompt_sqlite_nodata(db_path)
+def generate_combined_prompts_one(db_path, question, sql_dialect, addrow, knowledge=None):
+    if addrow==1:
+        num_rows = 3
+        schema_prompt = generate_schema_prompt_sqlite(db_path,num_rows)
+    else:
+        schema_prompt = generate_schema_prompt_sqlite_nodata(db_path)
+
     comment_prompt = generate_comment_prompt(question, sql_dialect, knowledge)
     # cot_prompt = generate_cot_prompt(sql_dialect)
     instruction_prompt = generate_instruction_prompt(sql_dialect)

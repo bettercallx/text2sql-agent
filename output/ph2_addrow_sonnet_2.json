@@ -1,0 +1,20 @@
+[
+  {
+    "question_id": 1471,
+    "db_id": "debit_card_specializing",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT CAST(COUNT(CASE WHEN Currency = 'EUR' THEN 1 END) AS FLOAT) / COUNT(CASE WHEN Currency = 'CZK' THEN 1 END) AS ratio\nFROM customers\nWHERE Currency IN ('EUR', 'CZK')",
+    "gold_sql": "SELECT CAST(SUM(IIF(Currency = 'EUR', 1, 0)) AS FLOAT) / SUM(IIF(Currency = 'CZK', 1, 0)) AS ratio FROM customers",
+    "correct": true,
+    "raw_output": "SELECT CAST(COUNT(CASE WHEN Currency = 'EUR' THEN 1 END) AS FLOAT) / COUNT(CASE WHEN Currency = 'CZK' THEN 1 END) AS ratio\nFROM customers\nWHERE Currency IN ('EUR', 'CZK');"
+  },
+  {
+    "question_id": 1472,
+    "db_id": "debit_card_specializing",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT c.CustomerID\nFROM yearmonth y\nJOIN customers c ON y.CustomerID = c.CustomerID\nWHERE c.Segment = 'LAM'\n  AND y.Date BETWEEN '201201' AND '201212'\nORDER BY y.Consumption ASC\nLIMIT 1",
+    "gold_sql": "SELECT T1.CustomerID FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Segment = 'LAM' AND SUBSTR(T2.Date, 1, 4) = '2012' GROUP BY T1.CustomerID ORDER BY SUM(T2.Consumption) ASC LIMIT 1",
+    "correct": false,
+    "raw_output": "SELECT c.CustomerID\nFROM yearmonth y\nJOIN customers c ON y.CustomerID = c.CustomerID\nWHERE c.Segment = 'LAM'\n  AND y.Date BETWEEN '201201' AND '201212'\nORDER BY y.Consumption ASC\nLIMIT 1;"
+  }
+]

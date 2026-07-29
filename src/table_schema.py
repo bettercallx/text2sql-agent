@@ -103,12 +103,16 @@ def generate_schema_prompt_sqlite_nodata(db_path):
     return "\n".join(s[0] for s in schemas if s[0])
 
 
+# data 对齐成整齐的文本表格
+# CustomerID, SME, CZK.  变为 CustomerID Segment Currency
+# 1, LAM, EUR                         1     SME      CZK
 def nice_look_table(column_names: list, values: list):
     rows = []
     # Determine the maximum width of each column
     widths = [
         max(len(str(value[i])) for value in values + [column_names])
         for i in range(len(column_names))
+        # list comprehension 列表推导式 把循环和append压缩成一行写在[]
     ]
 
     # Print the column names
@@ -139,8 +143,11 @@ def generate_schema_prompt_sqlite(db_path, num_rows=None):
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
     schemas = {}
+
+    #遍历每个table获得schema
     for table in tables:
-        if table == "sqlite_sequence":
+        if table[0] == "sqlite_sequence":
+            # 跳过内部表, sqlite_sequence 是自动创建的表, 不是业务数据, 不跳过会出现CREATE TABLE sqlite_sequence(name,seq)
             continue
         cursor.execute(
             "SELECT sql FROM sqlite_master WHERE type='table' AND name='{}';".format(
@@ -149,6 +156,8 @@ def generate_schema_prompt_sqlite(db_path, num_rows=None):
         )
         create_prompt = cursor.fetchone()[0]
         schemas[table[0]] = create_prompt
+
+        #增加 样例data
         if num_rows:
             cur_table = table[0]
             if cur_table in ["order", "by", "group"]:
@@ -157,6 +166,7 @@ def generate_schema_prompt_sqlite(db_path, num_rows=None):
             cursor.execute("SELECT * FROM {} LIMIT {}".format(cur_table, num_rows))
             column_names = [description[0] for description in cursor.description]
             values = cursor.fetchall()
+
             rows_prompt = nice_look_table(column_names=column_names, values=values)
             verbose_prompt = "/* \n {} example rows: \n SELECT * FROM {} LIMIT {}; \n {} \n */".format(
                 num_rows, cur_table, num_rows, rows_prompt

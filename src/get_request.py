@@ -77,7 +77,7 @@ def is_correct(db_path, predicted_sql, gold_sql):
 
 
 # Generate peompt, compare sql result and save results
-def collect_responce_evaluation(datasets, db_path_list, question_list,knowledge_list, engine, query_times,sql_dialect):
+def collect_responce_evaluation(datasets, db_path_list, question_list,knowledge_list, engine, query_times,sql_dialect, addrow):
     prompts =[]
     results =[]
     correct =0
@@ -85,9 +85,10 @@ def collect_responce_evaluation(datasets, db_path_list, question_list,knowledge_
     # generate prompt
     for i in range(query_times):
         prompt = generate_combined_prompts_one(db_path=db_path_list[i],
-            question=question_list[i], sql_dialect=sql_dialect,knowledge=knowledge_list[i])
+            question=question_list[i], sql_dialect=sql_dialect,addrow=addrow,knowledge=knowledge_list[i])
         prompts.append(prompt)
         print(f"Prompt {i}: {len(prompt)} chars")
+        print(prompts[i])
 
     print(f"All prompt generated, starting call API")
 
@@ -131,6 +132,7 @@ if __name__ == "__main__":
     args_parser.add_argument("--q_nums", type=int, default=10)
     args_parser.add_argument("--eval_path", type=str, default="")
     args_parser.add_argument("--data_output_path", type=str, default="")
+    args_parser.add_argument("--addrow", type=int, default=0)
     args_parser.add_argument("--sql_dialect", type=str, default="SQLite")
     args = args_parser.parse_args()
 
@@ -140,7 +142,7 @@ if __name__ == "__main__":
 
     res = collect_responce_evaluation( datasets= eval_data,db_path_list=db_path_list, 
                                       question_list= question_list, knowledge_list=knowledge_list,
-                                      engine= args.engine, query_times=args.q_nums,sql_dialect=args.sql_dialect)
+                                      engine= args.engine, query_times=args.q_nums,sql_dialect=args.sql_dialect,addrow=args.addrow)
 
     with open(args.data_output_path, "w") as f:
         json.dump(res, f, indent=2)

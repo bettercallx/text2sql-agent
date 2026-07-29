@@ -1,5 +1,5 @@
 import json
-data = json.load(open("./output/baseline_sonnet_500.json", "r"))
+data = json.load(open("./output/ph2_addrow_sonnet_500.json", "r"))
 
 # 用 数据结构 替代 重复复制粘贴变量名，用一个dict或list收起来
 
