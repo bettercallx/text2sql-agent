@@ -35,7 +35,7 @@ For fast, cost-effective tasks: Claude Haiku 4.5: claude-haiku-4-5-20251001
 | | Sonnet-4-6 (500queries) | Haiku (50queries) | Haiku (10queries) |
 | :--- | :---: | :---: | :---: |
 | 1.baseline(schema+question) | x | | x |
-| 2.baseline+ 3 rows real data | | | |
+| 2.baseline+ 3 rows real data | x | | x |
 | 3.schema linking? | | | |
 | 4.error recovering? | | | |
 

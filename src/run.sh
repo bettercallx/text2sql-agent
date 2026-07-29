@@ -19,7 +19,7 @@ else
 fi
 
 sql_dialect='SQLite'
-data_output_path="./output/ph2_addrow_sonnet_${query_times}.json"
+data_output_path="./output/ph2_addrow_haiku_${query_times}.json"
 
 echo "generate $engine batch, $query_times queries"
 python3 -u ./src/get_request.py --db_root_path ${db_root_path} --engine ${engine} --q_nums ${query_times} \
