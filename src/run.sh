@@ -6,7 +6,7 @@ engine_mode=3
 
 if [ "$engine_mode" -eq 3 ]; then
     engine='claude-sonnet-4-6'
-    query_times=5
+    query_times=500
 elif [ "$engine_mode" -eq 2 ]; then
     engine='claude-haiku-4-5-20251001'
     query_times=50

@@ -31,21 +31,6 @@ def clean_sql(response_text):
         text = text.rsplit("```", 1)[0]
     return text.strip().rstrip(";")
 
-# save SQL result
-def generate_sql_file(sql_lst, output_path=None):
-    """
-    Function to save the SQL results to a file.
-    """
-    sql_lst.sort(key=lambda x: x[1])
-    result = {}
-    for i, (sql, _) in enumerate(sql_lst):
-        result[i] = sql
-
-    if output_path:
-        json.dump(result, open(output_path, "w"), indent=4)
-
-    return result
-
 
 # temperature control text generation randomness(0.0->1.0)
 def connect_claude(engine, prompt):
@@ -59,6 +44,7 @@ def connect_claude(engine, prompt):
                 max_tokens=1024,
                 temperature=0,
                 model=engine,
+                timeout=60,
                 messages=[
                     {
                         "role": "user",
@@ -72,32 +58,49 @@ def connect_claude(engine, prompt):
             time.sleep(4)
     return None
 
+# compare result of predicted_sql with gold_sql
 def is_correct(db_path, predicted_sql, gold_sql):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     try:
         cursor.execute(predicted_sql)
         predicted = cursor.fetchall()
+
         cursor.execute(gold_sql)
         gold = cursor.fetchall()
+
         return predicted == gold
     except:
         return False
     finally:
         conn.close()
 
-def collect_responce_evaluation(datasets,db_path_list, question_list,knowledge_list, engine, query_times,sql_dialect):
+
+# Generate peompt, compare sql result and save results
+def collect_responce_evaluation(datasets, db_path_list, question_list,knowledge_list, engine, query_times,sql_dialect):
+    prompts =[]
     results =[]
     correct =0
+
+    # generate prompt
     for i in range(query_times):
-        print(f"Now [{i+1}/{query_times}] Processing {datasets[i].get('question_id')}")
         prompt = generate_combined_prompts_one(db_path=db_path_list[i],
             question=question_list[i], sql_dialect=sql_dialect,knowledge=knowledge_list[i])
-        raw = connect_claude(engine, prompt)
+        prompts.append(prompt)
+        print(f"Prompt {i}: {len(prompt)} chars")
+
+    print(f"All prompt generated, starting call API")
+
+    # connect_claude: API calls,  is_correct: compare the results
+    for i in range(query_times):
+        print(f"Now [{i+1}/{query_times}] Processing {datasets[i].get('question_id')}")
+
+        raw = connect_claude(engine, prompts[i])
         if raw is None:
             print(f"Failed: {datasets[i].get('question_id')} after retries")
             results.append({"question_id": datasets[i].get("question_id"),"result": False})
             continue
+
         predicted_sql = clean_sql(raw)
         gold_sql = datasets[i].get("SQL")
         match = is_correct(db_path_list[i], predicted_sql,gold_sql)
