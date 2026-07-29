@@ -45,6 +45,8 @@ For fast, cost-effective tasks: Claude Haiku 4.5: claude-haiku-4-5-20251001
 
 **problem:** waiting prompt/api response and stucked for a long time, generating prompt & accessing API need to be split
 
+## Phase2 
+
 **2026/7/29:**
 
 **Failure analysis:**
@@ -123,5 +125,7 @@ california_schools :16-14, ( 53.3 %)
 financial :20-12, ( 62.5 %)
 ```
 
+**failure analysis:**
 
+- debit_card_specializing 5, thrombosis_prediction 3, european_football_2 6, card_games 6, california_schools 8 . generate sql quality decrease
 

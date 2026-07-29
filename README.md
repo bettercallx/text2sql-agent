@@ -2,33 +2,29 @@
 
 benchmark mini_dev
 
-| **model** | **SQLite** |
-| :---: | ---: |
-| claude-sonnet-4-6 | 50% (10 queries) |
-
 **Baseline:**
 
 | | Sonnet-4-6 (500queries) | Haiku (50queries) | Haiku (10queries) |
 | :--- | :---: | :---: | :---: |
-| 1.baseline(schema+question) | 311/500 (62.2%) | | 40% |
-| 2.baseline+ 3 rows real data | | | |
+| 1.baseline(schema+question) | 311/500 (62.2%) | | 4/10 (40%) |
+| 2.baseline+ 3 rows real data | 308/500 (61.6%) | | 4/10 (40%) |
 | 3.schema linking? | | | |
 | 4.error recovering? | | | |
 
 **Phase1 baseline:**
-
-| **sonnet-4-6** | simple (true-false) | moderate | challenging |
-| :---: | :---: | :---: | :---: |
-| **baseline** | 111-37 75% | 144-106 57.6% | 56-46 54.9% |
-| **baseline+3rows** | 108-40 73% | 142-108 56.8% | 58-44 56.9% |
-
-
 
 ph1 : baseline
 
 ph2 : baseline + 3 rows data for all db
 
 ph3 : baseline + 3 rows data for some db
+
+| **sonnet-4-6** | simple (true-false) | moderate | challenging |
+| :---: | :---: | :---: | :---: |
+| **baseline** | 111-37 **75%** | 144-106 **57.6%** | 56-46 **54.9%** |
+| **baseline+3rows** | 108-40 **73%** | 142-108 **56.8%** | 58-44 **56.9%** |
+
+each database:
 
 | db_id | tables | ph1 (true-false) | ph2 (true-false) | ph1 percentage | ph2 percentage |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -44,6 +40,5 @@ ph3 : baseline + 3 rows data for some db
 | california_schools | 3 | 17-13 | 16-14 | 56.7% | 53.3% **-** |
 | financial | 8 | 15-17 | 20-12 | 46.9% | 62.5% **+** |
 
-**Phase2 add example row:**
 
 
